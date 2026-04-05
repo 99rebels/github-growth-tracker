@@ -25,10 +25,15 @@ VERSION = "1.2.0"
 MAX_HISTORY_DAYS = 90
 
 # Paths — data lives outside the skill folder so it persists across skill updates
-DATA_DIR = os.path.join(os.path.expanduser("~/.openclaw/workspace"), "data", "github-tracker")
+# SKILL_DATA_DIR is set by agent platforms; falls back to ~/.config/github-growth-tracker/
+DATA_DIR = os.path.expanduser(
+    os.environ.get("SKILL_DATA_DIR", "~/.config/github-growth-tracker")
+)
 CONFIG_PATH = os.path.join(DATA_DIR, "config.json")
 REPOS_DIR = os.path.join(DATA_DIR, "repos")
-CREDENTIALS_PATH = os.path.join(os.path.expanduser("~/.openclaw/credentials"), "github.json")
+CREDENTIALS_PATH = os.path.join(os.path.expanduser(
+    os.environ.get("SKILL_DATA_DIR", "~/.config/github-growth-tracker")
+), "github.json")
 
 
 # ── GitHub API ──────────────────────────────────────────────────────────────
@@ -39,7 +44,7 @@ def github_api(endpoint, token):
     headers = {
         "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "openclaw-github-growth-tracker/1.0",
+        "User-Agent": "github-growth-tracker/1.0",
     }
     try:
         with urlopen(Request(url, headers=headers), timeout=15) as resp:
@@ -62,12 +67,13 @@ def get_token():
 
 
 def save_token(token):
-    """Save token to ~/.openclaw/credentials/github.json."""
+    """Save token to <DATA_DIR>/github.json."""
     creds_dir = os.path.dirname(CREDENTIALS_PATH)
     os.makedirs(creds_dir, exist_ok=True)
     with open(CREDENTIALS_PATH, "w") as f:
         json.dump({"github_token": token}, f, indent=2)
         f.write("\n")
+    os.chmod(CREDENTIALS_PATH, 0o600)
 
 
 # ── Config & Storage ────────────────────────────────────────────────────────
@@ -405,7 +411,7 @@ def main():
     sub = p.add_subparsers(dest="cmd")
 
     s = sub.add_parser("setup", help="List your repos for initial setup")
-    s.add_argument("--token", help="GitHub PAT (saved to ~/.openclaw/credentials/github.json)")
+    s.add_argument("--token", help="GitHub PAT (saved to <DATA_DIR>/github.json)")
 
     sub.add_parser("fetch", help="Fetch current metrics for all tracked + watched repos")
 

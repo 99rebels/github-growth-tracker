@@ -5,6 +5,7 @@ description: >
   analysis. Compare your repos against a watchlist. Use when checking repo stats, monitoring
   growth, setting up a github digest, comparing repos, or managing a repo watchlist.
   Requires GITHUB_TOKEN environment variable or GitHub PAT (see Credentials).
+homepage: https://github.com/99rebels/github-growth-tracker
 ---
 
 # GitHub Growth Tracker 📊
@@ -32,7 +33,7 @@ Type:     Fine-grained
 Access:   Public repos (read-only)
 ```
 
-Pass via `setup --token <TOKEN>` (saved to `~/.openclaw/credentials/github.json`) or set `GITHUB_TOKEN` env var.
+Pass via `setup --token <TOKEN>` (saved to `<DATA_DIR>/github.json`) or set `GITHUB_TOKEN` env var.
 
 ⚠ Token is stored plaintext on disk. For higher security, use the `GITHUB_TOKEN` environment variable instead.
 
@@ -86,15 +87,22 @@ Format output for the current channel. Read [references/formatting.md](reference
 python3 <skill_path>/scripts/github_tracker.py fetch && python3 <skill_path>/scripts/github_tracker.py digest
 ```
 
-## Config & Data
+## Data Directory
+
+Credentials and data resolve to:
 
 ```
-Credentials: ~/.openclaw/credentials/github.json  (token)
-Config:      ~/.openclaw/workspace/data/github-tracker/config.json  (repo lists)
-History:     ~/.openclaw/workspace/data/github-tracker/repos/  (per-repo, 90 days)
+1. $SKILL_DATA_DIR (set by agent platform)
+2. ~/.config/github-growth-tracker/  (default fallback)
 ```
 
-Data lives outside the skill folder. Removing a repo keeps its history.
+```
+Credentials: <DATA_DIR>/github.json     (token)
+Config:      <DATA_DIR>/config.json      (repo lists)
+History:     <DATA_DIR>/repos/           (per-repo, 90 days)
+```
+
+Any platform can set `$SKILL_DATA_DIR`. If unset, `~/.config/github-growth-tracker/` is used. Works with OpenClaw, Claude Code, Codex, and any agent that can run Python scripts.
 
 ## Notes
 
